@@ -37,16 +37,17 @@ export function Hero() {
 
       <div className="relative mx-auto w-full max-w-6xl px-5 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl text-center">
-          {/* Live indicator */}
-          <AnimateIn>
-            <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium">
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inset-0 rounded-full bg-[#ff0000] animate-blink" />
-                <span className="rounded-full h-2 w-2 bg-[#ff0000]" />
-              </span>
-              <span>Cohorte ouverte · 3 places restantes</span>
-            </div>
-          </AnimateIn>
+          {h.liveIndicator && (
+            <AnimateIn>
+              <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inset-0 rounded-full bg-[#ff0000] animate-blink" />
+                  <span className="rounded-full h-2 w-2 bg-[#ff0000]" />
+                </span>
+                <span>{h.liveIndicator}</span>
+              </div>
+            </AnimateIn>
+          )}
 
           {h.badge && (
             <AnimateIn>

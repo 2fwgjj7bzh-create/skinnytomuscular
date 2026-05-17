@@ -1,4 +1,4 @@
-import { Inter, Hanken_Grotesk } from "next/font/google";
+import { Inter, Bebas_Neue } from "next/font/google";
 
 export const fontBody = Inter({
   subsets: ["latin"],
@@ -7,9 +7,9 @@ export const fontBody = Inter({
   weight: ["400", "500", "600"],
 });
 
-export const fontDisplay = Hanken_Grotesk({
+export const fontDisplay = Bebas_Neue({
   subsets: ["latin"],
   variable: "--font-display",
   display: "swap",
-  weight: ["600", "700", "800", "900"],
+  weight: "400",
 });

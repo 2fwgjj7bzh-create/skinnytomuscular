@@ -14,6 +14,7 @@ type Status =
   | { kind: "submitting" }
   | { kind: "unqualified" }
   | { kind: "calendar"; name?: string; email?: string }
+  | { kind: "confirmed" }
   | { kind: "error"; message: string };
 
 export function QualificationForm({
@@ -102,7 +103,12 @@ export function QualificationForm({
         setStatus({ kind: "unqualified" });
         return;
       }
-      setStatus({ kind: "calendar", name: data.name, email: data.email });
+      if (form.successScreen.kind === "confirmation") {
+        setStatus({ kind: "confirmed" });
+        track("newsletter_signup", { form_id: form.id });
+        return;
+      }
+      setStatus({ kind: "calendar", name: data.name ?? data.firstName, email: data.email });
     } catch {
       setStatus({ kind: "error", message: "Erreur réseau. Réessaye dans quelques secondes." });
     }
@@ -207,7 +213,7 @@ export function QualificationForm({
           </Step>
         )}
 
-        {status.kind === "calendar" && (
+        {status.kind === "calendar" && form.successScreen.kind === "calcom" && (
           <CalendarView
             calLink={form.successScreen.calcomLink}
             namespace={form.successScreen.namespace}
@@ -218,6 +224,33 @@ export function QualificationForm({
             redirectAfterBooking={form.redirectAfterBooking}
             formId={form.id}
           />
+        )}
+
+        {status.kind === "confirmed" && form.successScreen.kind === "confirmation" && (
+          <Step>
+            <h2 className="text-2xl md:text-4xl font-bold tracking-tight mb-4">
+              {form.successScreen.headline}
+            </h2>
+            {form.successScreen.subheadline && (
+              <p className="text-muted text-base md:text-lg leading-relaxed mb-8 max-w-xl">
+                {form.successScreen.subheadline}
+              </p>
+            )}
+            {form.successScreen.cta && (
+              <a
+                href={form.successScreen.cta.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex h-12 items-center gap-2 rounded-[var(--radius)] bg-primary px-7 text-sm font-semibold text-primary-foreground hover:opacity-90 transition cta-glow"
+              >
+                {form.successScreen.cta.label}
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M5 12h14" />
+                  <path d="m12 5 7 7-7 7" />
+                </svg>
+              </a>
+            )}
+          </Step>
         )}
 
         {status.kind === "error" && (

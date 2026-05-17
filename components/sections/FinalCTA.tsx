@@ -11,7 +11,7 @@ export function FinalCTA() {
     <section
       id="cta"
       className={cn(
-        "relative overflow-hidden py-24 md:py-36",
+        "relative overflow-hidden py-14 md:py-20",
         c.dark && "section-dark",
       )}
     >

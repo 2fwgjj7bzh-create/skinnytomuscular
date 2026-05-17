@@ -27,8 +27,8 @@ export default function MerciPage() {
             Bien joué. À très vite.
           </h1>
           <p className="text-muted text-base md:text-lg max-w-xl mx-auto">
-            Tu as un mail de confirmation avec le lien Google Meet. En attendant le rendez-vous,
-            cette vidéo te donnera 15 minutes d&apos;avance sur ce qu&apos;on va aborder.
+            Tu as reçu un mail de confirmation avec le lien du rendez-vous. En attendant,
+            regarde cette vidéo — elle te donne une longueur d&apos;avance sur ce qu&apos;on va aborder.
           </p>
         </div>
 

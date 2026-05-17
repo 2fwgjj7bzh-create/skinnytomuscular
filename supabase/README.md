@@ -39,8 +39,8 @@ Crée un fichier `.env.local` à la racine du projet (copie depuis `.env.example
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 
 # Cal.com
-NEXT_PUBLIC_CALCOM_LINK=titouan.grow/call-coworking
-NEXT_PUBLIC_CALENDLY_URL=https://cal.com/titouan.grow/call-coworking
+NEXT_PUBLIC_CALCOM_LINK=your-handle/discovery-call
+NEXT_PUBLIC_CALENDLY_URL=https://cal.com/your-handle/discovery-call
 
 # Vidéo YouTube post-booking sur /merci
 NEXT_PUBLIC_MERCI_YOUTUBE_ID=YOUR_VIDEO_ID

@@ -51,7 +51,8 @@ export async function POST(req: Request) {
   }
 
   const formId = asString(body.formId, 64);
-  if (!formId || formId !== siteConfig.forms.qualification.id) {
+  const validFormIds = [siteConfig.forms.qualification.id, siteConfig.forms.newsletter.id];
+  if (!formId || !validFormIds.includes(formId)) {
     return NextResponse.json({ ok: false, error: "unknown_form" }, { status: 400 });
   }
 
@@ -62,15 +63,55 @@ export async function POST(req: Request) {
 
   const data = asObject(body.data);
   const utm = asObject(body.utm);
+  const supabase = getSupabaseAdmin();
 
+  // --- Newsletter form ---
+  if (formId === siteConfig.forms.newsletter.id) {
+    const firstName = asString(data.firstName, 60);
+    const lastName = asString(data.lastName, 60);
+    const email = asString(data.email, 200);
+
+    if (!firstName || !lastName || !email) {
+      return NextResponse.json({ ok: false, error: "missing_fields" }, { status: 400 });
+    }
+    if (!EMAIL_RE.test(email)) {
+      return NextResponse.json({ ok: false, error: "invalid_email" }, { status: 400 });
+    }
+
+    const { error: leadError } = await supabase.from("leads").insert({
+      session_id: sessionId,
+      form_id: formId,
+      name: `${firstName} ${lastName}`,
+      email,
+      qualified: true,
+      utm,
+    });
+
+    if (leadError) {
+      console.error("[forms/submit] newsletter lead insert failed", leadError);
+      return NextResponse.json({ ok: false, error: "db_error" }, { status: 500 });
+    }
+
+    await supabase.from("events").insert({
+      session_id: sessionId,
+      event_name: "newsletter_signup",
+      payload: { form_id: formId },
+      utm,
+      path: asString(req.headers.get("referer"), 512),
+      user_agent: asString(req.headers.get("user-agent"), 512),
+    });
+
+    return NextResponse.json({ ok: true, qualified: true });
+  }
+
+  // --- Qualification form ---
   const name = asString(data.name, 120);
-  const niche = asString(data.niche, 200);
-  const revenue = asString(data.revenue, 16);
-  const youtube = asString(data.youtube, 16);
-  const pain = asString(data.pain, 800);
+  const context = asString(data.context, 300);
+  const stage = asString(data.stage, 40);
+  const goal = asString(data.goal, 800);
   const email = asString(data.email, 200);
 
-  if (!name || !niche || !revenue || !youtube || !pain || !email) {
+  if (!name || !context || !stage || !goal || !email) {
     return NextResponse.json({ ok: false, error: "missing_fields" }, { status: 400 });
   }
   if (!EMAIL_RE.test(email)) {
@@ -78,39 +119,36 @@ export async function POST(req: Request) {
   }
 
   const form = siteConfig.forms.qualification;
-  const revenueQuestion = form.questions.find(
-    (q): q is Extract<typeof q, { type: "choice" }> => q.id === "revenue" && q.type === "choice",
+  const stageQuestion = form.questions.find(
+    (q): q is Extract<typeof q, { type: "choice" }> => q.id === "stage" && q.type === "choice",
   );
-  const opt = revenueQuestion?.options.find((o) => o.value === revenue);
+  const opt = stageQuestion?.options.find((o) => o.value === stage);
   if (!opt) {
-    return NextResponse.json({ ok: false, error: "invalid_revenue" }, { status: 400 });
+    return NextResponse.json({ ok: false, error: "invalid_stage" }, { status: 400 });
   }
   const qualified = !opt.disqualifies;
-
-  const supabase = getSupabaseAdmin();
 
   const { error: leadError } = await supabase.from("leads").insert({
     session_id: sessionId,
     form_id: formId,
     name,
     email,
-    niche,
-    revenue,
-    youtube,
-    pain,
+    niche: context,
+    pain: goal,
+    revenue: stage,
     qualified,
     utm,
   });
 
   if (leadError) {
-    console.error("[forms/submit] lead insert failed", leadError);
+    console.error("[forms/submit] qualification lead insert failed", leadError);
     return NextResponse.json({ ok: false, error: "db_error" }, { status: 500 });
   }
 
   await supabase.from("events").insert({
     session_id: sessionId,
     event_name: qualified ? "form_qualified" : "form_unqualified",
-    payload: { form_id: formId, revenue, youtube },
+    payload: { form_id: formId, stage },
     utm,
     path: asString(req.headers.get("referer"), 512),
     user_agent: asString(req.headers.get("user-agent"), 512),

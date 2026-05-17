@@ -16,7 +16,7 @@ export function Section({
   return (
     <section
       id={id}
-      className={cn("py-20 md:py-28 relative", className)}
+      className={cn("py-10 md:py-14 relative", className)}
     >
       {bleed ? (
         children

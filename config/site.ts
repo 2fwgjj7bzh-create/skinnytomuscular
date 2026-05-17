@@ -67,13 +67,20 @@ export type FormDefinition = {
   intro?: { headline: string; subheadline?: string };
   questions: FormQuestion[];
   unqualifiedScreen: { headline: string; description: string };
-  successScreen: {
-    kind: "calcom";
-    calcomLink: string;
-    namespace: string;
-    headline?: string;
-    subheadline?: string;
-  };
+  successScreen:
+    | {
+        kind: "calcom";
+        calcomLink: string;
+        namespace: string;
+        headline?: string;
+        subheadline?: string;
+      }
+    | {
+        kind: "confirmation";
+        headline: string;
+        subheadline?: string;
+        cta?: CTA;
+      };
   redirectAfterBooking?: string;
 };
 
@@ -119,6 +126,7 @@ export type SiteConfig = {
   };
   forms: {
     qualification: FormDefinition;
+    newsletter: FormDefinition;
   };
   marquee: {
     enabled: boolean;
@@ -141,8 +149,8 @@ export type SiteConfig = {
 export type HeroSection = {
   enabled: boolean;
   badge?: string;
+  liveIndicator?: string;
   headline: string;
-  /** Optional substring of headline rendered with an animated red underline. */
   headlineHighlight?: string;
   subheadline: string;
   primaryCta: CTA;
@@ -200,6 +208,7 @@ export type TestimonialsSection = {
     name: string;
     role: string;
     photo?: string;
+    photos?: { before: string; after: string };
     result?: string;
   }[];
 };
@@ -249,46 +258,49 @@ export type FooterSection = {
   legal: string;
 };
 
-const CALCOM_LINK = process.env.NEXT_PUBLIC_CALCOM_LINK || "titouan.grow/call-coworking";
+const CALENDLY_URL =
+  process.env.NEXT_PUBLIC_CALENDLY_URL || "https://calendly.com/so-sptcoaching/30min";
+
+const CALCOM_LINK = process.env.NEXT_PUBLIC_CALCOM_LINK || "your-handle/discovery-call";
 const CALCOM_NAMESPACE = "qualification";
-const CALENDLY_FALLBACK = process.env.NEXT_PUBLIC_CALENDLY_URL || `https://cal.com/${CALCOM_LINK}`;
 
 export const siteConfig: SiteConfig = {
   meta: {
-    title: "Titouan — Atteins 10 000€/mois avec 1 vidéo YouTube par semaine",
+    title: "Anajar Coaching — Coaching musculation science-based pour hommes skinny",
     description:
-      "Coaching 1:1 pour les coachs qui veulent passer de 3-5k€/mois à 10k€/mois grâce à une stratégie YouTube long format. Pas de Reels, pas d'ads. 12 semaines, 1 appel par semaine.",
+      "Coaching 1:1 à distance pour hommes 25-40 ans qui n'arrivent pas à prendre du muscle. Protocole basé sur la science. 4 transformations documentées. Résultats garantis.",
     siteUrl: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
     ogImage: "/og.png",
     locale: "fr_FR",
     favicon: "/favicon.ico",
     keywords: [
-      "coaching coachs",
-      "youtube coachs",
-      "scaler coaching",
-      "10k mois coach",
-      "youtube long format",
-      "stratégie YouTube",
+      "coaching musculation",
+      "skinny",
+      "prise de masse",
+      "ectomorphe",
+      "coach sport en ligne",
+      "programme musculation",
+      "coaching en ligne",
     ],
     jsonLd: null,
   },
   theme: {
     colors: {
-      background: "#ffffff",
-      foreground: "#0a0a0a",
-      muted: "#6b7280",
-      border: "#e5e7eb",
-      card: "#fafafa",
-      primary: "#0a0a0a",
-      primaryForeground: "#ffffff",
+      background: "#000000",
+      foreground: "#f5f5f5",
+      muted: "#737373",
+      border: "#1f1f1f",
+      card: "#111111",
+      primary: "#f5f5f5",
+      primaryForeground: "#000000",
       accent: "#ff0000",
       accentForeground: "#ffffff",
     },
     fonts: {
-      display: "Space Grotesk",
+      display: "Bebas Neue",
       body: "Inter",
     },
-    radius: "lg",
+    radius: "sm",
   },
   tracking: {
     fbPixelId: process.env.NEXT_PUBLIC_FB_PIXEL_ID || "",
@@ -296,25 +308,26 @@ export const siteConfig: SiteConfig = {
     scrollDepths: [25, 50, 75, 100],
     timeMilestones: [15, 30, 60, 120],
     customEvents: [
-      { name: "form_open", description: "Le visiteur ouvre le formulaire de qualif" },
+      { name: "form_open", description: "Le visiteur ouvre le formulaire" },
       { name: "form_step", description: "Validation d'une étape du formulaire" },
       { name: "form_qualified", description: "Form complété avec un profil qualifié" },
-      { name: "form_unqualified", description: "Form complété avec un profil non qualifié (CA < 1k€)" },
+      { name: "form_unqualified", description: "Form complété avec un profil non qualifié" },
       { name: "form_abandoned", description: "Form fermé en cours de saisie" },
-      { name: "booking_success", description: "Booking Cal.com confirmé" },
+      { name: "booking_success", description: "Booking confirmé" },
+      { name: "newsletter_signup", description: "Inscription newsletter via Final CTA" },
     ],
   },
   links: {
-    primaryCta: CALENDLY_FALLBACK,
+    primaryCta: CALENDLY_URL,
     checkout: process.env.NEXT_PUBLIC_CHECKOUT_URL || "",
   },
   forms: {
     qualification: {
       id: "qualification",
       intro: {
-        headline: "On checke si on est le bon match.",
+        headline: "Quelques questions avant de réserver.",
         subheadline:
-          "6 questions rapides pour qu'on parte sur l'appel avec du concret. Pas de pitch automatique derrière — juste un audit honnête.",
+          "Pour qu'on parte sur l'appel avec du concret. 90 secondes, 4 questions.",
       },
       questions: [
         {
@@ -325,132 +338,177 @@ export const siteConfig: SiteConfig = {
           required: true,
         },
         {
-          id: "niche",
+          id: "context",
           type: "text",
-          label: "Tu coaches dans quel domaine ?",
-          placeholder: "Ex : coach de vie, business, fitness, parentalité…",
+          label: "Quelle est ta situation actuelle ?",
+          placeholder: "Ex : ingénieur, 28 ans, salle 2x/semaine depuis 6 mois",
           required: true,
         },
         {
-          id: "revenue",
+          id: "stage",
           type: "choice",
-          label: "Ton CA mensuel actuel ?",
+          label: "Où tu en es avec ta morphologie ?",
           required: true,
           options: [
-            { value: "<1k", label: "Moins de 1 000€", disqualifies: true },
-            { value: "1-3k", label: "1 000€ – 3 000€" },
-            { value: "3-5k", label: "3 000€ – 5 000€" },
-            { value: "5-10k", label: "5 000€ – 10 000€" },
-            { value: "10k+", label: "Plus de 10 000€" },
+            { value: "very_skinny", label: "Très mince, j'ai du mal à prendre quoi que ce soit" },
+            { value: "skinny_fat", label: "Maigre mais avec un peu de gras (skinny fat)" },
+            { value: "some_progress", label: "J'ai un peu progressé mais je stagne" },
+            { value: "other", label: "Autre situation", disqualifies: true },
           ],
         },
         {
-          id: "youtube",
-          type: "choice",
-          label: "Tu fais déjà du YouTube long format ?",
-          required: true,
-          options: [
-            { value: "no", label: "Non, jamais touché" },
-            { value: "sometimes", label: "Oui, sporadiquement" },
-            { value: "regular", label: "Oui, régulièrement" },
-          ],
-        },
-        {
-          id: "pain",
+          id: "goal",
           type: "textarea",
-          label: "C'est quoi ton plus gros frein là, maintenant ?",
-          placeholder: "En 2-3 phrases, ce qui te bloque vraiment aujourd'hui.",
+          label: "C'est quoi ton objectif dans les 3 prochains mois ?",
+          placeholder: "Ex : prendre 5 kg de muscle, remplir mes t-shirts, me sentir plus imposant...",
           required: true,
           maxLength: 400,
         },
         {
           id: "email",
           type: "email",
-          label: "Ton email pour qu'on confirme le rendez-vous",
+          label: "Ton email pour confirmer le rendez-vous",
           placeholder: "ton@email.com",
           required: true,
         },
       ],
       unqualifiedScreen: {
-        headline: "On est trop tôt pour bosser ensemble.",
+        headline: "On n'est pas alignés pour le moment.",
         description:
-          "L'accompagnement est calibré pour les coachs qui ont déjà au moins 1 000€/mois — c'est à partir de là que le levier YouTube fait sens. En dessous, le sujet c'est pas YouTube, c'est l'offre et le positionnement. Reviens me voir quand t'auras passé ce cap, on regardera vraiment.",
+          "Mon coaching est calibré pour les hommes skinny ou skinny fat qui veulent prendre du muscle. Si ton objectif est différent, je ne suis pas la bonne personne — mais n'hésite pas à revenir si tu te retrouves dans ce profil.",
       },
       successScreen: {
         kind: "calcom",
         calcomLink: CALCOM_LINK,
         namespace: CALCOM_NAMESPACE,
-        headline: "On est bons. Choisis ton créneau.",
-        subheadline: "30 minutes, en visio. Pas de pitch, juste un audit honnête de ta situation.",
+        headline: "C'est bon. Choisis ton créneau.",
+        subheadline: "30 minutes en visio. Pas de pitch — juste un échange honnête.",
       },
       redirectAfterBooking: "/merci",
+    },
+    newsletter: {
+      id: "newsletter",
+      intro: {
+        headline: "Reste dans la boucle.",
+        subheadline:
+          "Laisse-moi tes coordonnées. Dès qu'une place de coaching se libère, tu es le premier informé.",
+      },
+      questions: [
+        {
+          id: "firstName",
+          type: "text",
+          label: "Ton prénom",
+          placeholder: "Prénom",
+          required: true,
+        },
+        {
+          id: "lastName",
+          type: "text",
+          label: "Ton nom",
+          placeholder: "Nom",
+          required: true,
+        },
+        {
+          id: "email",
+          type: "email",
+          label: "Ton email",
+          placeholder: "ton@email.com",
+          required: true,
+        },
+      ],
+      unqualifiedScreen: {
+        headline: "",
+        description: "",
+      },
+      successScreen: {
+        kind: "confirmation",
+        headline: "Bien reçu.",
+        subheadline:
+          "Tu recevras un message dès qu'une place se libère. En attendant, tu peux réserver ton appel découverte directement.",
+        cta: {
+          label: "Réserver mon appel maintenant",
+          href: CALENDLY_URL,
+          variant: "primary",
+          trackingEvent: "Lead",
+        },
+      },
     },
   },
   marquee: {
     enabled: true,
     items: [
-      "1 vidéo YouTube par semaine",
-      "Coaching 1:1 · 12 semaines",
-      "Sans Reels",
-      "Sans ads",
-      "Sans burn-out",
-      "10 000€/mois",
-      "YouTube long format",
-      "Audit positionnement inclus",
+      "Science-based",
+      "Coaching 1:1",
+      "Résultats garantis",
+      "Suivi WhatsApp",
+      "Protocole personnalisé",
+      "Des transformations documentées",
     ],
   },
   sections: {
     hero: {
       enabled: true,
-      headline: "Passe de 3 000€ à 10 000€/mois. Avec 1 vidéo YouTube par semaine.",
-      headlineHighlight: "1 vidéo YouTube par semaine",
+      liveIndicator: "Places limitées · coaching 1:1",
+      headline: "Arrête de flotter dans tes vêtements.",
+      headlineHighlight: "flotter dans tes vêtements",
       subheadline:
-        "Sans Reels. Sans ads. Sans burn-out de contenu. Une méthode 1:1 pour les coachs qui ont arrêté d'attendre que l'algo Insta les remarque.",
+        "Coaching musculation 1:1 pour hommes skinny qui veulent enfin prendre du muscle. Protocole basé sur la science, suivi hebdo, résultats garantis.",
       primaryCta: {
         label: "Réserver mon appel découverte",
-        href: CALENDLY_FALLBACK,
+        href: CALENDLY_URL,
         variant: "primary",
         trackingEvent: "Lead",
-        formId: "qualification",
       },
-      visual: { kind: "none" },
-      trustLine: "Coaching 1:1 · 12 semaines · Pas de groupe, pas de Discord.",
+      visual: { kind: "image", src: "/hero.jpg", alt: "Sofiane Anajar — Coach musculation" },
+      trustLine: "Coaching à distance · Bilan offert · Garantie de résultat",
     },
     socialProof: {
-      enabled: false,
-      caption: "Ils ont fait confiance à la méthode",
+      enabled: true,
+      caption: "Des transformations réelles, documentées",
       logos: [],
-      stats: [],
-      shortQuotes: [],
+      stats: [
+        { value: "+16 kg", label: "prise de masse en 20 mois" },
+        { value: "+9 kg", label: "en 4 mois" },
+        { value: "+6 kg", label: "en 1 mois" },
+      ],
+      shortQuotes: [
+        {
+          quote: "En 4 mois j'ai pris 9 kg. Je n'avais jamais réussi à autant progresser seul.",
+          author: "Bilal, 29 ans",
+        },
+        {
+          quote: "16 kg en moins de 2 ans. Je suis méconnaissable.",
+          author: "Lucas, 30 ans",
+        },
+      ],
     },
     problem: {
       enabled: true,
       dark: false,
       eyebrow: "Le vrai problème",
-      headline:
-        "Si tu fais 3-5k€/mois en postant tous les jours, ce n'est pas un problème de contenu. C'est un problème de format.",
+      headline: "\"Je stagne depuis des années. Pourtant j'essaie.\"",
       description:
-        "Le contenu court attire des curieux. Les curieux likent, ils n'achètent pas. Tu peux poster 5 Reels par semaine pendant 2 ans : tu auras plus d'abonnés, pas plus de clients à 1 000€+.",
+        "Si tu t'entraînes depuis des mois sans voir de changement, ce n'est pas un problème de génétique. C'est un problème de méthode. Les programmes génériques ne sont pas conçus pour les hommes skinny.",
       pains: [
         {
-          title: "Tu cours après l'algo, pas après tes clients",
+          title: "\"Je flotte dans mes vêtements\"",
           description:
-            "Tu passes 15h par semaine sur Insta pour 1-2 clients par mois. Tu sais que c'est pas viable. Tu sais pas comment sortir.",
+            "Tu t'habilles pour cacher, pas pour montrer. Chaque miroir est une confrontation que tu évites. Tu portes des couches pour compenser une silhouette que tu n'assumes pas.",
         },
         {
-          title: "Tes followers grossissent, ton CA stagne",
+          title: "\"On me donne 22 ans à 32\"",
           description:
-            "+500 abonnés ce mois-ci. 1 client signé. Le ratio attention → vente est cassé, et personne te le dit clairement.",
+            "Tu ne dégages pas l'autorité que tu mérites. Dans une pièce, tu passes inaperçu. Ça joue sur ta confiance, tes relations, ta façon d'occuper l'espace — au travail comme dans ta vie perso.",
         },
         {
-          title: "Tu attires des curieux, pas des acheteurs",
+          title: "\"Je veux pas vieillir comme ça\"",
           description:
-            "Le contenu court divertit. Pour vendre 1k€+, il faut éduquer. Et éduquer en 90 secondes c'est mathématiquement impossible.",
+            "Tu sais que sans changement maintenant, dans 10 ans ce sera encore pire. Mais tu ne sais pas comment casser ce cycle. Chaque tentative finit au même endroit : la stagnation.",
         },
         {
-          title: "Tu sens que YouTube serait mieux. Tu te lances pas.",
+          title: "\"J'ai tout essayé, rien ne marche\"",
           description:
-            "T'as peur de la caméra. T'as peur de pas savoir quoi dire. T'as peur que ça décolle pas. Donc tu retournes sur Insta.",
+            "Les programmes YouTube, les plans Reddit, les conseils des potes en salle... Tu fais les choses à l'aveugle, sans comprendre pourquoi ton corps ne répond pas comme les autres.",
         },
       ],
     },
@@ -458,71 +516,58 @@ export const siteConfig: SiteConfig = {
       enabled: true,
       dark: true,
       eyebrow: "La méthode",
-      headline: "1 vidéo YouTube par semaine. Qui pré-vend ton offre 24/7.",
+      headline: "Un protocole conçu pour ceux qui n'arrivent jamais à grossir.",
       description:
-        "Une vidéo longue ne demande pas plus de temps que 5 Reels mal foutus. Elle fait l'inverse : elle continue de bosser pour toi pendant 6, 12, 24 mois. Quand un prospect arrive sur ton appel, t'as déjà passé 30 minutes à le convaincre.",
+        "Les skinny ont une physiologie différente. Métabolisme rapide, morphologie longiligne, leviers mécaniques atypiques — tout ça s'optimise différemment. Mon coaching est construit sur la science de la prise de masse pour ectomorphes, pas sur des programmes génériques qui fonctionnent pour tout le monde sauf toi.",
       bullets: [
-        "Une vidéo = 30 minutes de pré-vente pendant que tu dors",
-        "Tes prospects arrivent en appel déjà éduqués, déjà convaincus",
-        "Ton tunnel ne dépend plus d'un algo qui change tous les 3 mois",
-        "Chaque vidéo continue de générer des appels pendant des années (SEO YouTube)",
+        "Programme muscu personnalisé selon ta morpho-anatomie et tes éventuelles pathologies",
+        "Nutrition et compléments calibrés pour forcer la prise de masse sur ton métabolisme rapide",
+        "Suivi WhatsApp hebdomadaire + 1 call mensuel pour ajuster en temps réel",
+        "Garantie résultat : si tu appliques et que tu ne prends pas 5 à 10 kg, on continue gratuitement",
       ],
     },
     features: {
-      enabled: true,
+      enabled: false,
       dark: false,
       eyebrow: "Ce que tu obtiens",
-      headline: "Coaching 1:1 sur 12 semaines. Toi et moi. C'est tout.",
-      description:
-        "Pas de groupe Telegram saturé. Pas de cours en autonomie où tu t'endors à la 3ème vidéo. Un audit complet, une méthode appliquée à ton business, un appel par semaine pour exécuter.",
-      features: [
+      headline: "",
+      description: "",
+      features: [],
+    },
+    testimonials: {
+      enabled: true,
+      eyebrow: "Ils l'ont fait",
+      headline: "Des transformations. Des vraies.",
+      testimonials: [
         {
-          icon: "target",
-          title: "Audit de positionnement",
-          description:
-            "Première semaine : on dissèque ton offre, ton ICP et ton écosystème actuel. Tu repars avec un positionnement unique en moins de 7 jours.",
+          quote:
+            "En 4 mois j'ai pris 9 kg. Je n'avais jamais réussi à autant progresser seul en plusieurs années. Sofiane m'a expliqué pourquoi je stagnais — et comment tout changer.",
+          name: "Bilal",
+          role: "29 ans, ingénieur",
+          photos: { before: "/testimonials/bilal-avant.jpg", after: "/testimonials/bilal-apres.jpg" },
+          result: "+9 kg en 4 mois",
         },
         {
-          icon: "spark",
-          title: "Méthode d'écriture",
-          description:
-            "Le cœur du programme. Comment scripter une vidéo qui informe ET pré-vend, sans tomber dans la promo lourde. Templates inclus.",
+          quote:
+            "6 kg en 1 mois. Il m'a tout expliqué — pourquoi je ne prenais pas, comment manger, comment m'entraîner. Je comprends ce que je fais maintenant.",
+          name: "Benjamin",
+          role: "32 ans",
+          photos: { before: "/testimonials/benjamin-avant.jpg", after: "/testimonials/benjamin-apres.jpg" },
+          result: "+6 kg en 1 mois",
         },
         {
-          icon: "compass",
-          title: "Stratégie de sujets",
-          description:
-            "On définit les 24 prochains sujets de tes vidéos — ceux qui attirent les coachs prêts à investir 1-3k€, pas les curieux qui font défiler.",
-        },
-        {
-          icon: "rocket",
-          title: "Coaching 1:1 hebdomadaire",
-          description:
-            "1 appel par semaine pendant 12 semaines. Tu m'envoies tes scripts, on les retravaille en live. Pas d'attente, pas de thread Discord.",
-        },
-        {
-          icon: "chart",
-          title: "Optimisation conversion",
-          description:
-            "Comment transformer une vue YouTube en appel booké. Description, CTA, lead magnet, pinned comment — tout est cadré.",
-        },
-        {
-          icon: "clock",
-          title: "Suivi WhatsApp 12 semaines",
-          description:
-            "Accès direct sur WhatsApp pour les questions courtes entre les sessions. Réponse sous 24h en semaine.",
+          quote:
+            "16 kg en moins de 2 ans. Je suis méconnaissable. C'est la première fois de ma vie que je me sens bien dans mon corps.",
+          name: "Lucas",
+          role: "30 ans",
+          photos: { before: "/testimonials/lucas-avant.jpg", after: "/testimonials/lucas-apres.jpg" },
+          result: "+16 kg en 20 mois",
         },
       ],
     },
-    testimonials: {
-      enabled: false,
-      eyebrow: "Ils l'ont fait",
-      headline: "",
-      testimonials: [],
-    },
     pricing: {
       enabled: false,
-      eyebrow: "",
+      eyebrow: "Investissement",
       headline: "",
       description: "",
       plans: [],
@@ -531,57 +576,58 @@ export const siteConfig: SiteConfig = {
       enabled: true,
       dark: false,
       eyebrow: "FAQ",
-      headline: "Les vraies questions qu'on me pose en appel.",
+      headline: "Les questions qu'on me pose en vrai.",
       items: [
         {
-          question: "YouTube ça prend pas des mois à décoller ?",
+          question: "J'ai pas le temps de suivre un programme compliqué.",
           answer:
-            "Non — quand tu t'adresses à un public restreint et qu'on optimise chaque vidéo pour la conversion (pas pour les vues), tu n'as pas besoin de millions de vues. 500 vues qualifiées valent mieux que 50 000 vues curieuses. Mes clients signent leur premier client YouTube entre la 3ème et la 5ème vidéo.",
+            "Tu t'entraînes déjà. Ce que je change, c'est la direction et l'efficacité de ce que tu fais. Le suivi WhatsApp prend 5 minutes par semaine. Le programme s'adapte à ton emploi du temps et ton niveau — pas l'inverse.",
         },
         {
-          question: "J'ai pas le temps de tourner et monter une vidéo par semaine.",
+          question: "J'ai peur d'essayer encore une fois et d'échouer.",
           answer:
-            "1 vidéo YouTube = 4 à 6h de travail (script, tournage, montage). Tu en récupères 10 en arrêtant de spam Insta. Mathématiquement, tu dégages du temps — pas l'inverse.",
+            "C'est exactement pour ça qu'il y a une garantie. Si tu appliques ce que je te donne — entraînement, nutrition, suivi — et que tu ne vois pas de résultats mesurables, on continue ensemble sans frais jusqu'à ce que tu les aies. Je m'engage sur tes résultats, pas sur des promesses.",
         },
         {
-          question: "Je sais pas écrire / je suis pas à l'aise face caméra.",
+          question: "Est-ce que ça marche pour les débutants complets ?",
           answer:
-            "C'est exactement ce qu'on travaille en coaching. L'écriture s'apprend en 4 semaines avec la bonne méthode. La caméra, c'est de la répétition — et un script bien écrit règle 80% de ton inconfort dès la 3ème vidéo.",
+            "Oui. La plupart de mes clients commençaient avec peu ou pas d'expérience. C'est même là où les résultats sont les plus spectaculaires — Benjamin a pris 6 kg sur le premier mois.",
         },
         {
-          question: "Et si ça marche pas pour ma niche ?",
+          question: "Comment se passe le suivi à distance concrètement ?",
           answer:
-            "YouTube fonctionne pour toutes les niches qui ont un client à plus de 500€ — coachs business, coachs de vie, fitness, nutrition, parentalité, dev perso, finance, immobilier. La question c'est jamais 'est-ce que ma niche marche', c'est 'est-ce que je sais m'adresser à la bonne personne dedans'.",
-        },
-        {
-          question: "Pourquoi pas un programme groupe moins cher ?",
-          answer:
-            "Parce que ton positionnement est unique — un programme groupe ne peut pas le travailler sérieusement. Sur 12 semaines, on adapte chaque vidéo à TA chaîne, TON ICP, TES forces. C'est pour ça que ce n'est pas 297€ et pas en groupe.",
+            "Ton programme personnalisé est directement dans ton application, ce qui te permet de l'avoir partout avec toi et d'avoir un tracking sur chaque élément. Chaque semaine on fait un point par message : photos, poids, ressenti. J'analyse et ajuste si besoin. Chaque mois, on s'appelle pour faire le point plus en détail sur ton suivi.",
         },
       ],
     },
     finalCta: {
       enabled: true,
       dark: true,
-      headline: "Prêt à arrêter de courir après l'algo Insta ?",
+      headline: "Prêt à ne plus flotter dans tes vêtements ?",
       subheadline:
-        "30 minutes pour qu'on regarde ensemble si ta chaîne YouTube peut t'amener à 10 000€/mois. Pas de pitch, pas de pression — juste un audit honnête.",
+        "Laisse-moi ton prénom, nom et email. Dès qu'une place de coaching se libère, tu es le premier à le savoir.",
       cta: {
-        label: "Réserver mon appel découverte",
-        href: CALENDLY_FALLBACK,
+        label: "Je veux être musclé",
+        href: CALENDLY_URL,
         variant: "primary",
-        trackingEvent: "Lead",
-        formId: "qualification",
+        trackingEvent: "newsletter_signup",
+        formId: "newsletter",
       },
-      microTrust: "Pas de pitch. Pas de pression. 30 min en visio.",
+      microTrust: "Pas de spam. Juste un message quand une place se libère.",
     },
     footer: {
       enabled: true,
       dark: true,
-      brand: "Titouan",
-      links: [],
-      socials: [],
-      legal: `© ${new Date().getFullYear()} Titouan. Tous droits réservés.`,
+      brand: "Anajar Coaching",
+      tagline: "Bientôt musclé, sculpte ton potentiel.",
+      links: [
+        { label: "Mentions légales", href: "/mentions-legales" },
+      ],
+      socials: [
+        { platform: "instagram", href: "https://www.instagram.com/sofiane.anajar" },
+        { platform: "tiktok", href: "https://www.tiktok.com/@sofianeanajar" },
+      ],
+      legal: `© ${new Date().getFullYear()} Anajar Coaching. Tous droits réservés.`,
     },
   },
 };

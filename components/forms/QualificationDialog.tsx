@@ -17,26 +17,28 @@ export function openForm(formId: string) {
   window.dispatchEvent(new CustomEvent(FORM_OPEN_EVENT, { detail: { formId } }));
 }
 
+const ALL_FORMS = [siteConfig.forms.qualification, siteConfig.forms.newsletter];
+
 export function QualificationDialog() {
-  const [open, setOpen] = useState(false);
+  const [activeForm, setActiveForm] = useState<typeof ALL_FORMS[number] | null>(null);
   const [mountKey, setMountKey] = useState(0);
 
   useEffect(() => {
     const handler = (e: CustomEvent<{ formId: string }>) => {
-      if (e.detail?.formId === siteConfig.forms.qualification.id) {
+      const form = ALL_FORMS.find((f) => f.id === e.detail?.formId);
+      if (form) {
         setMountKey((k) => k + 1);
-        setOpen(true);
+        setActiveForm(form);
       }
     };
     window.addEventListener(FORM_OPEN_EVENT, handler);
     return () => window.removeEventListener(FORM_OPEN_EVENT, handler);
   }, []);
 
-  // ESC to close + lock body scroll while open
   useEffect(() => {
-    if (!open) return;
+    if (!activeForm) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === "Escape") setActiveForm(null);
     };
     document.addEventListener("keydown", onKey);
     const prevOverflow = document.body.style.overflow;
@@ -45,15 +47,15 @@ export function QualificationDialog() {
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = prevOverflow;
     };
-  }, [open]);
+  }, [activeForm]);
 
-  if (!open) return null;
+  if (!activeForm) return null;
 
   return (
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Formulaire de qualification"
+      aria-label="Formulaire"
       className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in p-0 md:p-6"
     >
       <div
@@ -61,8 +63,8 @@ export function QualificationDialog() {
         className="relative w-full h-full md:h-auto md:max-h-[92vh] md:w-[min(100%,960px)] md:rounded-2xl overflow-hidden shadow-2xl border border-border bg-background animate-scale-in"
       >
         <QualificationForm
-          form={siteConfig.forms.qualification}
-          onClose={() => setOpen(false)}
+          form={activeForm}
+          onClose={() => setActiveForm(null)}
         />
       </div>
     </div>
