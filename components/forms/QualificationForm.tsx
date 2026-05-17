@@ -171,7 +171,7 @@ export function QualificationForm({
                 <path d="m12 5 7 7-7 7" />
               </svg>
             </button>
-            <p className="mt-6 text-xs text-muted">~ 90 secondes · 6 questions</p>
+            <p className="mt-6 text-xs text-muted">~ 90 secondes · {form.questions.length} questions</p>
           </Step>
         )}
 
