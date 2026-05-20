@@ -452,9 +452,9 @@ export const siteConfig: SiteConfig = {
         kind: "confirmation",
         headline: "Bien reçu.",
         subheadline:
-          "Tu recevras un message dès qu'une place se libère. En attendant, tu peux réserver ton appel découverte directement.",
+          "Il ne te reste plus qu'à réserver ton appel pour faire ton premier bilan.",
         cta: {
-          label: "Réserver mon appel maintenant",
+          label: "Bientôt musclé",
           href: CALENDLY_URL,
           variant: "primary",
           trackingEvent: "Lead",
@@ -477,12 +477,12 @@ export const siteConfig: SiteConfig = {
     hero: {
       enabled: true,
       liveIndicator: "Pour les skinny qui veulent enfin être musclé",
-      headline: "Le système skinny : remplis tes vêtements en moins de 120 jours.",
-      headlineHighlight: "120 jours",
+      headline: "Le système skinny : remplis tes vêtements en moins de 90 jours.",
+      headlineHighlight: "90 jours",
       subheadline:
         "Donne-moi 12 semaines pour que ton physique actuel ne soit plus qu'un mauvais souvenir. Sans gras inutile. Sans vivre à la salle. Sans en faire un échec de plus.",
       primaryCta: {
-        label: "Je réserve mon bilan personnalisé offert",
+        label: "Je veux être musclé",
         href: CALENDLY_URL,
         variant: "primary",
         trackingEvent: "Lead",
@@ -574,7 +574,7 @@ export const siteConfig: SiteConfig = {
           quote:
             "6 kg en 1 mois. Il m'a tout expliqué — pourquoi je ne prenais pas, comment manger, comment m'entraîner. Je comprends ce que je fais maintenant.",
           name: "Benjamin",
-          role: "32 ans",
+          role: "31 ans, couvreur-zingueur",
           photos: { before: "/testimonials/benjamin-avant.jpg", after: "/testimonials/benjamin-apres.jpg" },
           result: "+6 kg sec en 1 mois",
         },
@@ -582,7 +582,7 @@ export const siteConfig: SiteConfig = {
           quote:
             "16 kg en moins de 2 ans. Je suis méconnaissable. C'est la première fois de ma vie que je me sens bien dans mon corps.",
           name: "Lucas",
-          role: "30 ans",
+          role: "28 ans, chef d'entreprise",
           photos: { before: "/testimonials/lucas-avant.jpg", after: "/testimonials/lucas-apres.jpg" },
           result: "+16 kg sec en 20 mois",
         },

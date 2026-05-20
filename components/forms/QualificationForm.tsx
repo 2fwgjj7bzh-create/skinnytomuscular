@@ -321,7 +321,7 @@ export function QualificationForm({
                 href={form.successScreen.cta.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex h-12 items-center gap-2 rounded-[var(--radius)] bg-primary px-7 text-sm font-semibold text-primary-foreground hover:opacity-90 transition cta-glow"
+                className="inline-flex h-14 items-center gap-3 rounded-[var(--radius)] bg-primary px-8 text-2xl md:text-4xl font-display uppercase tracking-wide text-primary-foreground hover:opacity-90 transition cta-glow"
               >
                 {form.successScreen.cta.label}
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
