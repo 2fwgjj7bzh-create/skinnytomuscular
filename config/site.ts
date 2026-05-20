@@ -486,6 +486,7 @@ export const siteConfig: SiteConfig = {
         href: CALENDLY_URL,
         variant: "primary",
         trackingEvent: "Lead",
+        formId: "newsletter",
       },
       visual: { kind: "image", src: "/hero.jpg", alt: "Sofiane Anajar — Coach musculation" },
       trustLine: "",

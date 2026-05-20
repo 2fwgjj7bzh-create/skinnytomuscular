@@ -1,6 +1,9 @@
+"use client";
+
 import { siteConfig } from "@/config/site";
 import { Container } from "@/components/ui/Container";
 import { AnimateIn } from "@/components/ui/AnimateIn";
+import { openForm } from "@/components/forms/QualificationDialog";
 
 export function SocialProof() {
   const s = siteConfig.sections.socialProof;
@@ -31,15 +34,14 @@ export function SocialProof() {
 
         <AnimateIn delay={200}>
           <div className="mt-10 flex justify-center">
-            <a
-              href={siteConfig.sections.hero.primaryCta.href}
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              type="button"
+              onClick={() => openForm("newsletter")}
               className="inline-flex h-12 items-center gap-2 rounded-[var(--radius)] bg-primary px-7 text-base font-semibold text-primary-foreground hover:opacity-90 transition"
             >
               Je réserve mon bilan personnalisé offert
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-            </a>
+            </button>
           </div>
         </AnimateIn>
       </Container>
