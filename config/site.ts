@@ -60,6 +60,16 @@ export type FormQuestion =
       label: string;
       required?: boolean;
       options: { value: string; label: string; disqualifies?: boolean }[];
+    }
+  | {
+      id: string;
+      type: "group";
+      label?: string;
+      fields: (
+        | { id: string; type: "text" | "email"; label: string; placeholder?: string; required?: boolean }
+        | { id: string; type: "textarea"; label: string; placeholder?: string; required?: boolean }
+        | { id: string; type: "scale"; label: string; min: number; max: number; required?: boolean }
+      )[];
     };
 
 export type FormDefinition = {
@@ -388,32 +398,50 @@ export const siteConfig: SiteConfig = {
     },
     newsletter: {
       id: "newsletter",
-      intro: {
-        headline: "Reste dans la boucle.",
-        subheadline:
-          "Laisse-moi tes coordonnées. Dès qu'une place de coaching se libère, tu es le premier informé.",
-      },
       questions: [
         {
-          id: "firstName",
-          type: "text",
-          label: "Ton prénom",
-          placeholder: "Prénom",
-          required: true,
+          id: "contact",
+          type: "group",
+          fields: [
+            { id: "firstName", type: "text", label: "Prénom", placeholder: "Prénom", required: true },
+            { id: "lastName", type: "text", label: "Nom", placeholder: "Nom", required: true },
+            { id: "email", type: "email", label: "Email", placeholder: "ton@email.com", required: true },
+          ],
         },
         {
-          id: "lastName",
-          type: "text",
-          label: "Ton nom",
-          placeholder: "Nom",
-          required: true,
-        },
-        {
-          id: "email",
-          type: "email",
-          label: "Ton email",
-          placeholder: "ton@email.com",
-          required: true,
+          id: "qualification",
+          type: "group",
+          fields: [
+            {
+              id: "situation",
+              type: "textarea",
+              label: "Quelle est ta situation actuelle (professionnelle et personnelle) ?",
+              placeholder: "Décris ta situation en quelques lignes…",
+              required: true,
+            },
+            {
+              id: "aspiration",
+              type: "textarea",
+              label: "As-tu une idée précise de ce que tu souhaites devenir ?",
+              placeholder: "Ton objectif physique, comment tu te vois dans 6 mois…",
+              required: true,
+            },
+            {
+              id: "tried",
+              type: "textarea",
+              label: "Qu'as-tu déjà essayé pour te transformer ?",
+              placeholder: "Programmes, salles, régimes, compléments…",
+              required: true,
+            },
+            {
+              id: "commitment",
+              type: "scale",
+              label: "À quel point es-tu prêt à t'investir ? (1 = pas vraiment / 10 = à fond)",
+              min: 1,
+              max: 10,
+              required: true,
+            },
+          ],
         },
       ],
       unqualifiedScreen: {
@@ -448,19 +476,19 @@ export const siteConfig: SiteConfig = {
   sections: {
     hero: {
       enabled: true,
-      liveIndicator: "Places limitées · coaching 1:1",
-      headline: "Arrête de flotter dans tes vêtements.",
-      headlineHighlight: "flotter dans tes vêtements",
+      liveIndicator: "Pour les skinny qui veulent enfin être musclé",
+      headline: "Le système skinny : remplis tes vêtements en moins de 120 jours.",
+      headlineHighlight: "120 jours",
       subheadline:
-        "Coaching musculation 1:1 pour hommes skinny qui veulent enfin prendre du muscle. Protocole basé sur la science, suivi hebdo, résultats garantis.",
+        "Donne-moi 12 semaines pour que ton physique actuel ne soit plus qu'un mauvais souvenir. Sans gras inutile. Sans vivre à la salle. Sans en faire un échec de plus.",
       primaryCta: {
-        label: "Réserver mon appel découverte",
+        label: "Je réserve mon bilan personnalisé offert",
         href: CALENDLY_URL,
         variant: "primary",
         trackingEvent: "Lead",
       },
       visual: { kind: "image", src: "/hero.jpg", alt: "Sofiane Anajar — Coach musculation" },
-      trustLine: "Coaching à distance · Bilan offert · Garantie de résultat",
+      trustLine: "",
     },
     socialProof: {
       enabled: true,
@@ -519,12 +547,7 @@ export const siteConfig: SiteConfig = {
       headline: "Un protocole conçu pour ceux qui n'arrivent jamais à grossir.",
       description:
         "Les skinny ont une physiologie différente. Métabolisme rapide, morphologie longiligne, leviers mécaniques atypiques — tout ça s'optimise différemment. Mon coaching est construit sur la science de la prise de masse pour ectomorphes, pas sur des programmes génériques qui fonctionnent pour tout le monde sauf toi.",
-      bullets: [
-        "Programme muscu personnalisé selon ta morpho-anatomie et tes éventuelles pathologies",
-        "Nutrition et compléments calibrés pour forcer la prise de masse sur ton métabolisme rapide",
-        "Suivi WhatsApp hebdomadaire + 1 call mensuel pour ajuster en temps réel",
-        "Garantie résultat : si tu appliques et que tu ne prends pas 5 à 10 kg, on continue gratuitement",
-      ],
+      bullets: [],
     },
     features: {
       enabled: false,
@@ -545,7 +568,7 @@ export const siteConfig: SiteConfig = {
           name: "Bilal",
           role: "29 ans, ingénieur",
           photos: { before: "/testimonials/bilal-avant.jpg", after: "/testimonials/bilal-apres.jpg" },
-          result: "+9 kg en 4 mois",
+          result: "+9 kg sec en 6 mois",
         },
         {
           quote:
@@ -553,7 +576,7 @@ export const siteConfig: SiteConfig = {
           name: "Benjamin",
           role: "32 ans",
           photos: { before: "/testimonials/benjamin-avant.jpg", after: "/testimonials/benjamin-apres.jpg" },
-          result: "+6 kg en 1 mois",
+          result: "+6 kg sec en 1 mois",
         },
         {
           quote:
@@ -561,7 +584,7 @@ export const siteConfig: SiteConfig = {
           name: "Lucas",
           role: "30 ans",
           photos: { before: "/testimonials/lucas-avant.jpg", after: "/testimonials/lucas-apres.jpg" },
-          result: "+16 kg en 20 mois",
+          result: "+16 kg sec en 20 mois",
         },
       ],
     },
@@ -613,7 +636,7 @@ export const siteConfig: SiteConfig = {
         trackingEvent: "newsletter_signup",
         formId: "newsletter",
       },
-      microTrust: "Pas de spam. Juste un message quand une place se libère.",
+      microTrust: "",
     },
     footer: {
       enabled: true,

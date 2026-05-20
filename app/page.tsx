@@ -18,10 +18,10 @@ export default function HomePage() {
       {s.hero.enabled && <Hero />}
       <Marquee />
       {s.socialProof.enabled && <SocialProof />}
+      {s.testimonials.enabled && <Testimonials />}
       {s.problem.enabled && <Problem />}
       {s.solution.enabled && <Solution />}
       {s.features.enabled && <Features />}
-      {s.testimonials.enabled && <Testimonials />}
       {s.pricing.enabled && <Pricing />}
       {s.faq.enabled && <FAQ />}
       {s.finalCta.enabled && <FinalCTA />}

@@ -35,9 +35,10 @@ export function SocialProof() {
               href={siteConfig.sections.hero.primaryCta.href}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex h-12 items-center gap-2 rounded-[var(--radius)] bg-primary px-7 text-sm font-semibold text-primary-foreground hover:opacity-90 transition"
+              className="inline-flex h-12 items-center gap-2 rounded-[var(--radius)] bg-primary px-7 text-base font-semibold text-primary-foreground hover:opacity-90 transition"
             >
-              Réserve ton bilan offert
+              Je réserve mon bilan personnalisé offert
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
             </a>
           </div>
         </AnimateIn>

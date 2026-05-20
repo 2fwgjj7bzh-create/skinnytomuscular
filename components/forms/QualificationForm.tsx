@@ -24,7 +24,9 @@ export function QualificationForm({
   form: FormDefinition;
   onClose: () => void;
 }) {
-  const [status, setStatus] = useState<Status>({ kind: "intro" });
+  const [status, setStatus] = useState<Status>(
+    !form.intro ? { kind: "question", index: 0 } : { kind: "intro" }
+  );
   const [data, setData] = useState<FormState>({});
   const statusRef = useRef<Status>(status);
   statusRef.current = status;
@@ -58,9 +60,19 @@ export function QualificationForm({
   }
 
   function next(currentQ: FormQuestion) {
-    const value = (data[currentQ.id] ?? "").trim();
-    if (currentQ.required !== false && !value) return;
-    if (currentQ.type === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return;
+    if (currentQ.type === "group") {
+      const allFilled = currentQ.fields.every((f) => {
+        const v = (data[f.id] ?? "").trim();
+        if (!v) return false;
+        if (f.type === "email") return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+        return true;
+      });
+      if (!allFilled) return;
+    } else {
+      const value = (data[currentQ.id] ?? "").trim();
+      if (currentQ.required !== false && !value) return;
+      if (currentQ.type === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return;
+    }
 
     track("form_step", { form_id: form.id, step: currentIndex + 1, field: currentQ.id });
 
@@ -175,16 +187,84 @@ export function QualificationForm({
           </Step>
         )}
 
-        {status.kind === "question" && (
-          <Step key={currentIndex}>
-            <QuestionView
-              question={form.questions[currentIndex]}
-              value={data[form.questions[currentIndex].id] ?? ""}
-              onChange={(v) => setField(form.questions[currentIndex].id, v)}
-              onNext={() => next(form.questions[currentIndex])}
-            />
-          </Step>
-        )}
+        {status.kind === "question" && (() => {
+          const q = form.questions[currentIndex];
+          if (q.type === "group") {
+            const allFilled = q.fields.every((f) => {
+              const v = (data[f.id] ?? "").trim();
+              if (!v) return false;
+              if (f.type === "email") return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+              return true;
+            });
+            return (
+              <Step key={currentIndex}>
+                <div className="flex flex-col gap-4 w-full max-w-md">
+                  {q.label && <p className="text-xs uppercase tracking-widest text-muted mb-2">{q.label}</p>}
+                  {q.fields.map((f) => (
+                    <div key={f.id} className="flex flex-col gap-1.5">
+                      <label className="text-sm font-medium text-foreground/80">{f.label}</label>
+                      {f.type === "textarea" ? (
+                        <textarea
+                          placeholder={"placeholder" in f ? f.placeholder : undefined}
+                          value={data[f.id] ?? ""}
+                          onChange={(e) => setField(f.id, e.target.value)}
+                          rows={3}
+                          className="rounded-[var(--radius)] border border-border bg-card px-4 py-3 text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/50 resize-none"
+                        />
+                      ) : f.type === "scale" ? (
+                        <div className="flex flex-wrap gap-2">
+                          {Array.from({ length: f.max - f.min + 1 }, (_, i) => f.min + i).map((n) => (
+                            <button
+                              key={n}
+                              type="button"
+                              onClick={() => setField(f.id, String(n))}
+                              className={cn(
+                                "h-10 w-10 rounded-[var(--radius)] border text-sm font-semibold transition",
+                                data[f.id] === String(n)
+                                  ? "border-accent bg-accent text-white"
+                                  : "border-border bg-card text-foreground hover:border-foreground/30"
+                              )}
+                            >
+                              {n}
+                            </button>
+                          ))}
+                        </div>
+                      ) : (
+                        <input
+                          type={f.type === "email" ? "email" : "text"}
+                          placeholder={"placeholder" in f ? f.placeholder : undefined}
+                          value={data[f.id] ?? ""}
+                          onChange={(e) => setField(f.id, e.target.value)}
+                          onKeyDown={(e) => { if (e.key === "Enter" && allFilled) next(q); }}
+                          className="h-11 rounded-[var(--radius)] border border-border bg-card px-4 text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/50"
+                        />
+                      )}
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    disabled={!allFilled}
+                    onClick={() => next(q)}
+                    className="mt-2 inline-flex h-12 items-center justify-center gap-2 rounded-[var(--radius)] bg-primary px-7 text-sm font-semibold text-primary-foreground hover:opacity-90 transition disabled:opacity-40"
+                  >
+                    Continuer
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                  </button>
+                </div>
+              </Step>
+            );
+          }
+          return (
+            <Step key={currentIndex}>
+              <QuestionView
+                question={q}
+                value={data[q.id] ?? ""}
+                onChange={(v) => setField(q.id, v)}
+                onNext={() => next(q)}
+              />
+            </Step>
+          );
+        })()}
 
         {status.kind === "submitting" && (
           <Step>
@@ -268,8 +348,8 @@ export function QualificationForm({
         )}
       </div>
 
-      {/* Footer nav */}
-      {status.kind === "question" && (
+      {/* Footer nav — masqué pour les questions group (bouton intégré) */}
+      {status.kind === "question" && form.questions[currentIndex]?.type !== "group" && (
         <footer className="border-t border-border px-5 py-4 md:px-8">
           <div className="flex items-center justify-between gap-3">
             <button
@@ -290,7 +370,7 @@ export function QualificationForm({
                   : "bg-card text-muted cursor-not-allowed",
               )}
             >
-              {currentIndex >= totalSteps - 1 ? "Envoyer" : "Continuer"}
+              Continuer
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M5 12h14" />
                 <path d="m12 5 7 7-7 7" />
@@ -329,7 +409,7 @@ function QuestionView({
     <div className="animate-slide-in-right">
       <label htmlFor={question.id} className="block text-2xl md:text-4xl font-bold tracking-tight mb-8">
         {question.label}
-        {question.required !== false && <span className="text-[#ff0000] ml-1">*</span>}
+        {"required" in question && question.required !== false && <span className="text-[#ff0000] ml-1">*</span>}
       </label>
 
       {question.type === "text" && (
@@ -516,8 +596,16 @@ function CalendarView({
 }
 
 function isValid(question: FormQuestion, data: FormState): boolean {
+  if (question.type === "group") {
+    return question.fields.every((f) => {
+      const v = (data[f.id] ?? "").trim();
+      if (!v) return false;
+      if (f.type === "email") return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+      return true;
+    });
+  }
   const value = (data[question.id] ?? "").trim();
-  if (question.required === false) return true;
+  if ("required" in question && question.required === false) return true;
   if (!value) return false;
   if (question.type === "email") return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
   return true;

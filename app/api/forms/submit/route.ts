@@ -70,8 +70,12 @@ export async function POST(req: Request) {
     const firstName = asString(data.firstName, 60);
     const lastName = asString(data.lastName, 60);
     const email = asString(data.email, 200);
+    const situation = asString(data.situation, 1000);
+    const aspiration = asString(data.aspiration, 1000);
+    const tried = asString(data.tried, 1000);
+    const commitment = asString(data.commitment, 4);
 
-    if (!firstName || !lastName || !email) {
+    if (!firstName || !lastName || !email || !situation || !aspiration || !tried || !commitment) {
       return NextResponse.json({ ok: false, error: "missing_fields" }, { status: 400 });
     }
     if (!EMAIL_RE.test(email)) {
@@ -85,6 +89,7 @@ export async function POST(req: Request) {
       email,
       qualified: true,
       utm,
+      pain: JSON.stringify({ situation, aspiration, tried, commitment }),
     });
 
     if (leadError) {
