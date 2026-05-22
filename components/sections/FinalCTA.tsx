@@ -29,7 +29,7 @@ export function FinalCTA() {
             </p>
             <div className="mt-10 flex justify-center">
               <div className="rounded-[var(--radius)] animate-pulse-red">
-                <Button cta={c.cta} size="lg" />
+                <Button cta={c.cta} size="lg" className="h-12 px-7 text-base font-semibold" />
               </div>
             </div>
             {c.microTrust && (

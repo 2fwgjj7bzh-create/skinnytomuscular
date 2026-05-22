@@ -90,6 +90,10 @@ export type FormDefinition = {
         headline: string;
         subheadline?: string;
         cta?: CTA;
+      }
+    | {
+        kind: "redirect";
+        href: string;
       };
   redirectAfterBooking?: string;
 };
@@ -449,16 +453,8 @@ export const siteConfig: SiteConfig = {
         description: "",
       },
       successScreen: {
-        kind: "confirmation",
-        headline: "Bien reçu.",
-        subheadline:
-          "Il ne te reste plus qu'à réserver ton appel pour faire ton premier bilan.",
-        cta: {
-          label: "Bientôt musclé",
-          href: CALENDLY_URL,
-          variant: "primary",
-          trackingEvent: "Lead",
-        },
+        kind: "redirect",
+        href: CALENDLY_URL,
       },
     },
   },
@@ -631,7 +627,7 @@ export const siteConfig: SiteConfig = {
       subheadline:
         "Laisse-moi ton prénom, nom et email. Dès qu'une place de coaching se libère, tu es le premier à le savoir.",
       cta: {
-        label: "Je veux être musclé",
+        label: "Bientôt musclé",
         href: CALENDLY_URL,
         variant: "primary",
         trackingEvent: "newsletter_signup",

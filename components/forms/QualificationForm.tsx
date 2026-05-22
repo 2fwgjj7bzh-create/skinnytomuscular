@@ -115,6 +115,11 @@ export function QualificationForm({
         setStatus({ kind: "unqualified" });
         return;
       }
+      if (form.successScreen.kind === "redirect") {
+        track("form_qualified", { form_id: form.id });
+        window.location.href = form.successScreen.href;
+        return;
+      }
       if (form.successScreen.kind === "confirmation") {
         setStatus({ kind: "confirmed" });
         track("newsletter_signup", { form_id: form.id });
