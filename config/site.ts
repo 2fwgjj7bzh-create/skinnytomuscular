@@ -317,7 +317,7 @@ export const siteConfig: SiteConfig = {
     radius: "sm",
   },
   tracking: {
-    fbPixelId: process.env.NEXT_PUBLIC_FB_PIXEL_ID || "",
+    fbPixelId: process.env.NEXT_PUBLIC_FB_PIXEL_ID || "2113796896019831",
     ga4Id: process.env.NEXT_PUBLIC_GA4_ID || "",
     scrollDepths: [25, 50, 75, 100],
     timeMilestones: [15, 30, 60, 120],
