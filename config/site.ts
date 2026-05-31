@@ -493,12 +493,12 @@ export const siteConfig: SiteConfig = {
       logos: [],
       stats: [
         { value: "+16 kg", label: "prise de masse en 20 mois" },
-        { value: "+9 kg", label: "en 4 mois" },
+        { value: "+9 kg", label: "en 6 mois" },
         { value: "+6 kg", label: "en 1 mois" },
       ],
       shortQuotes: [
         {
-          quote: "En 4 mois j'ai pris 9 kg. Je n'avais jamais réussi à autant progresser seul.",
+          quote: "En 6 mois j'ai pris 9 kg. Je n'avais jamais réussi à autant progresser seul.",
           author: "Bilal, 29 ans",
         },
         {
@@ -561,7 +561,7 @@ export const siteConfig: SiteConfig = {
       testimonials: [
         {
           quote:
-            "En 4 mois j'ai pris 9 kg. Je n'avais jamais réussi à autant progresser seul en plusieurs années. Sofiane m'a expliqué pourquoi je stagnais — et comment tout changer.",
+            "En 6 mois j'ai pris 9 kg. Je n'avais jamais réussi à autant progresser seul en plusieurs années. Sofiane m'a expliqué pourquoi je stagnais — et comment tout changer.",
           name: "Bilal",
           role: "29 ans, ingénieur",
           photos: { before: "/testimonials/bilal-avant.jpg", after: "/testimonials/bilal-apres.jpg" },
